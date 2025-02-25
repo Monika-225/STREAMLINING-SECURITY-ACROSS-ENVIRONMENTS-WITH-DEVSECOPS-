@@ -1,0 +1,23 @@
+name: DevSecOps Pipeline
+on:
+  push:
+    branches:
+      - main
+jobs:
+  security_scan:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Run Trivy Security Scan
+      run: trivy image backend-app:1.0
+
+  deploy:
+    needs: security_scan
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to IBM Kubernetes
+      run: |
+        ibmcloud login --apikey ${{ secrets.IBM_API_KEY }}
+        kubectl apply -f backend-deployment.yaml
